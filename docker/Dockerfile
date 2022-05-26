@@ -1,0 +1,9 @@
+FROM debian:11
+LABEL maintainer="https://t.me/crims0n"
+COPY ./sources.list /etc/apt/sources.list
+COPY ./config-5.10.0-14-amd64 /boot/
+RUN apt update && apt install -y git && apt build-dep -y linux
+VOLUME /kernel
+WORKDIR /build
+COPY ./aufs-kernel-compile-and-install .
+ENTRYPOINT ["./aufs-kernel-compile-and-install"]
