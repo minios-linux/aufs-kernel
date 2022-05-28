@@ -66,4 +66,5 @@ rm -f $TMP/usr/lib/modules/$KERNELVERSION/{build,source}
 mkdir -p $TMP/boot
 cp arch/x86/boot/bzImage $TMP/boot/vmlinuz-$KERNELVERSION
 cd $TMP
+#tar -c * | xz -T4 -f >/$KERNEL.tar.xz
 tar -c * | gzip -f >/$KERNEL.tar.gz
