@@ -1,8 +1,13 @@
 #!/bin/bash
+function version_to_array() {
+    local IFS
+    IFS="."
+    VER=($KERNELVERSION)
+}
 set -x -e
-KERNELVERSION=5.10.200
+KERNELVERSION=5.10.127
 KERNEL=linux-$KERNELVERSION
-CONFIG=/boot/config-5.10.0-15-*
+CONFIG=/boot/config-5.10.0-16-*
 AUFS=aufs5-standalone
 CHECKOUT=origin/aufs5.10.82
 
@@ -26,6 +31,10 @@ cp -a $AUFS/include/uapi/linux/aufs_type.h include/uapi/linux
 patch -p1 < $AUFS/aufs5-kbuild.patch
 patch -p1 < $AUFS/aufs5-base.patch
 patch -p1 < $AUFS/aufs5-mmap.patch
+version_to_array
+if [ "${VER[2]}" -eq "120" ] || [ "${VER[2]}" -gt "120" ]; then
+    sed -i '64i \ EXPORT_SYMBOL(__fput_sync);' $AUFS/aufs5-standalone.patch
+fi
 patch -p1 < $AUFS/aufs5-standalone.patch
 patch -p1 < $AUFS/aufs5-loopback.patch
 patch -p1 < $AUFS/vfs-ino.patch
@@ -66,5 +75,5 @@ rm -f $TMP/usr/lib/modules/$KERNELVERSION/{build,source}
 mkdir -p $TMP/boot
 cp arch/x86/boot/bzImage $TMP/boot/vmlinuz-$KERNELVERSION
 cd $TMP
-#tar -c * | xz -T4 -f >/$KERNEL.tar.xz
-tar -c * | gzip -f >/$KERNEL.tar.gz
+tar -c * | xz -T0 -f >/$KERNEL.tar.xz
+#tar -c * | gzip -f >/$KERNEL.tar.gz
