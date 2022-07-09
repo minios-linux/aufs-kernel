@@ -7,4 +7,4 @@ VOLUME /build
 WORKDIR /build
 COPY ./aufs-kernel-compile-and-install /
 COPY ./buildrun /
-ENTRYPOINT ["./buildrun"]
+ENTRYPOINT ["/buildrun"]
