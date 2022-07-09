@@ -5,5 +5,6 @@ COPY ./config-5.10.0-16-amd64 /boot/
 RUN apt update && apt install -y git xz-utils && apt build-dep -y linux
 VOLUME /build
 WORKDIR /build
-COPY ./aufs-kernel-compile-and-install .
+COPY ./aufs-kernel-compile-and-install /
+COPY ./buildrun /
 ENTRYPOINT ["./aufs-kernel-compile-and-install"]
