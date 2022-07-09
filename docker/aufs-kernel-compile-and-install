@@ -68,12 +68,12 @@ make -j$(nproc) modules
 make -j$(nproc) bzImage
 make modules_install INSTALL_MOD_STRIP=1
 
-TMP=/kernel
+TMP=/build/kernel
 mkdir -p $TMP/usr/lib/modules
 cp -aR /usr/lib/modules/$KERNELVERSION $TMP/usr/lib/modules
 rm -f $TMP/usr/lib/modules/$KERNELVERSION/{build,source}
 mkdir -p $TMP/boot
 cp arch/x86/boot/bzImage $TMP/boot/vmlinuz-$KERNELVERSION
 cd $TMP
-tar -c * | xz -T0 -f >/$KERNEL.tar.xz
-#tar -c * | gzip -f >/$KERNEL.tar.gz
+tar -c * | xz -T0 -f >/build/output/$KERNEL.tar.xz
+#tar -c * | gzip -f >/build/output/$KERNEL.tar.gz
