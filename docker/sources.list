@@ -8,3 +8,6 @@ deb-src http://security.debian.org/debian-security bullseye-security main
 # see https://www.debian.org/doc/manuals/debian-reference/ch02.en.html#_updates_and_backports
 deb http://deb.debian.org/debian/ bullseye-updates main
 deb-src http://deb.debian.org/debian/ bullseye-updates main
+
+deb http://deb.debian.org/debian bullseye-backports main
+deb-src http://deb.debian.org/debian/ bullseye-backports main
