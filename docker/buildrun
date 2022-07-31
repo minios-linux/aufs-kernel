@@ -1,4 +1,4 @@
 #!/bin/bash
 cp /aufs-kernel-compile-and-install /build/
 cd /build/
-./aufs-kernel-compile-and-install
+./aufs-kernel-compile-and-install default amd64

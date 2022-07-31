@@ -4,13 +4,18 @@ function version_to_array() {
     IFS="."
     VER=($KERNELVERSION)
 }
+[ ! "$2" ] && echo "Compiles the standard Debian kernel with AUFS support
+    Usage:    $0 [kernel type] [kernel arch]
+    Examples: $0 default amd64
+              $0 bpo 686-poe" && exit 1
 set -x -e
-KERNEL_TYPE="default"
+KERNEL_TYPE="$1"
+KERNEL_ARCH="$2"
 DISTRIBUTION="bullseye"
 AUFS=aufs5-standalone
 if [ $KERNEL_TYPE = "default" ]; then
     KERNELVERSION=5.10.127
-    CONFIG=/boot/config-5.10.0-16-*
+    CONFIG=/boot/config-5.10.0-16-$KERNEL_ARCH
     CHECKOUT=origin/aufs5.10.117
     mv /etc/apt/sources.list /etc/apt/sources.list.bak
     cat <<EOF >/etc/apt/sources.list
@@ -29,7 +34,7 @@ EOF
 elif [ $KERNEL_TYPE = "bpo" ]; then
     BPO="-t $DISTRIBUTION-backports"
     KERNELVERSION=5.18.2
-    CONFIG=/boot/config-5.18.0-0*
+    CONFIG=/boot/config-5.18.0-0.bpo.1-$KERNEL_ARCH
     CHECKOUT=origin/aufs5.18
     mv /etc/apt/sources.list /etc/apt/sources.list.bak
     cat <<EOF >/etc/apt/sources.list
@@ -114,9 +119,15 @@ make -j$(nproc) modules
 make -j$(nproc) bzImage
 make modules_install INSTALL_MOD_STRIP=1
 
-TMP=/build/kernel
+TMP=/build/kernel/$KERNEL_ARCH
+if [ -d /usr/lib/modules/$KERNELVERSION ]; then
+    MODULESDIR=/usr/lib/modules/$KERNELVERSION
+elif [ -d /lib/modules/$KERNELVERSION ]; then
+    MODULESDIR=/lib/modules/$KERNELVERSION
+else
+fi
 mkdir -p $TMP/usr/lib/modules
-cp -aR /usr/lib/modules/$KERNELVERSION $TMP/usr/lib/modules
+cp -aR $MODULESDIR $TMP/usr/lib/modules
 rm -f $TMP/usr/lib/modules/$KERNELVERSION/{build,source}
 mkdir -p $TMP/boot
 cp arch/x86/boot/bzImage $TMP/boot/vmlinuz-$KERNELVERSION
