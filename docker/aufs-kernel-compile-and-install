@@ -125,6 +125,7 @@ if [ -d /usr/lib/modules/$KERNELVERSION ]; then
 elif [ -d /lib/modules/$KERNELVERSION ]; then
     MODULESDIR=/lib/modules/$KERNELVERSION
 else
+    exit 1
 fi
 mkdir -p $TMP/usr/lib/modules
 cp -aR $MODULESDIR $TMP/usr/lib/modules
