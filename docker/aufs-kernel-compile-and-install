@@ -119,7 +119,7 @@ make -j$(nproc) modules
 make -j$(nproc) bzImage
 make modules_install INSTALL_MOD_STRIP=1
 
-TMP=/build/kernel/$KERNEL_ARCH
+TMP=/build/kernel/$KERNEL-$KERNEL_ARCH
 if [ -d /usr/lib/modules/$KERNELVERSION ]; then
     MODULESDIR=/usr/lib/modules/$KERNELVERSION
 elif [ -d /lib/modules/$KERNELVERSION ]; then
@@ -136,4 +136,4 @@ cd $TMP
 if [ ! -d /build/output ]; then
     mkdir -p /build/output
 fi
-tar -c * | xz -T0 -f >/build/output/$KERNEL.tar.xz
+tar -c * | xz -T0 -f >/build/output/$KERNEL-$KERNEL_ARCH.tar.xz
