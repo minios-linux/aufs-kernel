@@ -12,8 +12,10 @@ set -x -e
 KERNEL_TYPE="$1"
 KERNEL_ARCH="$2"
 if [ -n $3 ]; then
-    if [ $3 = "bpo" ]; then
+    if [ "$3" = "bpo" ]; then
         KERNEL_BPO="true"
+    else
+        KERNEL_BPO="false"
     fi
 fi
 DISTRIBUTION="bullseye"
