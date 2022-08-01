@@ -5,4 +5,4 @@
               $0 bpo 686-pae" && exit 1
 cp /aufs-kernel-compile-and-install /build/
 cd /build/
-./aufs-kernel-compile-and-install $1 $2
+./aufs-kernel-compile-and-install $1 $2 $3

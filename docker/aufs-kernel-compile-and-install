@@ -5,17 +5,29 @@ function version_to_array() {
     VER=($KERNELVERSION)
 }
 [ ! "$2" ] && echo "Compiles the standard Debian kernel with AUFS support
-    Usage:    $0 [kernel type] [kernel arch]
-    Examples: $0 default amd64
+    Usage:    $0 [kernel type] [kernel arch] [[bpo]]
+    Examples: $0 default amd64 bpo
               $0 bpo 686-pae" && exit 1
 set -x -e
 KERNEL_TYPE="$1"
 KERNEL_ARCH="$2"
+if [ -n $3 ]; then
+    if [ $3 = "bpo"]; then
+        KERNEL_BPO="true"
+    fi
+fi
 DISTRIBUTION="bullseye"
 AUFS=aufs5-standalone
 if [ $KERNEL_TYPE = "default" ]; then
+    KERNEL_TYPE=""
+elif [ $KERNEL_TYPE = "rt" ]; then
+    KERNEL_TYPE="-rt"
+elif [ $KERNEL_TYPE = "cloud" ]; then
+    KERNEL_TYPE="-cloud"
+fi
+if [ $KERNEL_BPO != "true" ]; then
     KERNELVERSION=5.10.127
-    CONFIG=/boot/config-5.10.0-16-$KERNEL_ARCH
+    CONFIG=/boot/config-5.10.0-16$KERNEL_TYPE-$KERNEL_ARCH
     CHECKOUT=origin/aufs5.10.117
     mv /etc/apt/sources.list /etc/apt/sources.list.bak
     cat <<EOF >/etc/apt/sources.list
@@ -31,10 +43,10 @@ deb http://deb.debian.org/debian/ bullseye-updates main
 deb-src http://deb.debian.org/debian/ bullseye-updates main
 
 EOF
-elif [ $KERNEL_TYPE = "bpo" ]; then
+else
     BPO="-t $DISTRIBUTION-backports"
     KERNELVERSION=5.18.2
-    CONFIG=/boot/config-5.18.0-0.bpo.1-$KERNEL_ARCH
+    CONFIG=/boot/config-5.18.0-0.bpo.1$KERNEL_TYPE-$KERNEL_ARCH
     CHECKOUT=origin/aufs5.18
     mv /etc/apt/sources.list /etc/apt/sources.list.bak
     cat <<EOF >/etc/apt/sources.list
@@ -53,9 +65,6 @@ deb http://deb.debian.org/debian bullseye-backports main
 deb-src http://deb.debian.org/debian/ bullseye-backports main
 
 EOF
-else
-    echo "Please set the correct value for the KERNEL_TYPE variable."
-    exit 1
 fi
 KERNEL=linux-$KERNELVERSION
 
@@ -119,7 +128,7 @@ make -j$(nproc) modules
 make -j$(nproc) bzImage
 make modules_install INSTALL_MOD_STRIP=1
 
-TMP=/build/kernel/$KERNEL-$KERNEL_ARCH
+TMP=/build/kernel/$KERNEL$KERNEL_TYPE-$KERNEL_ARCH
 if [ -d /usr/lib/modules/$KERNELVERSION ]; then
     MODULESDIR=/usr/lib/modules/$KERNELVERSION
 elif [ -d /lib/modules/$KERNELVERSION ]; then
@@ -136,4 +145,4 @@ cd $TMP
 if [ ! -d /build/output ]; then
     mkdir -p /build/output
 fi
-tar -c * | xz -T0 -f >/build/output/$KERNEL-$KERNEL_ARCH.tar.xz
+tar -c * | xz -T0 -f >/build/output/$KERNEL$KERNEL_TYPE-$KERNEL_ARCH.tar.xz
