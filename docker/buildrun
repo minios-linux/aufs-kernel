@@ -1,4 +1,8 @@
 #!/bin/bash
+[ ! "$2" ] && echo "Compiles the standard Debian kernel with AUFS support
+    Usage:    $0 [kernel type] [kernel arch]
+    Examples: $0 default amd64
+              $0 bpo 686-pae" && exit 1
 cp /aufs-kernel-compile-and-install /build/
 cd /build/
-./aufs-kernel-compile-and-install default amd64
+./aufs-kernel-compile-and-install $1 $2
