@@ -1,0 +1,136 @@
+#!/bin/bash
+function version_to_array() {
+    local IFS
+    IFS="."
+    VER=($KERNELVERSION)
+}
+[ ! "$2" ] && echo "Compiles the standard Debian kernel with AUFS support
+    Usage:    $0 [kernel type] [kernel arch] [[bpo]]
+    Examples: $0 default amd64 bpo
+              $0 rt 686-pae" && exit 1
+set -x -e
+KERNEL_TYPE="$1"
+KERNEL_ARCH="$2"
+if [ -n $3 ]; then
+    if [ "$3" = "bpo" ]; then
+        KERNEL_BPO="true"
+    else
+        KERNEL_BPO="false"
+    fi
+fi
+DISTRIBUTION="bullseye"
+AUFS=aufs5-standalone
+if [ $KERNEL_TYPE = "default" ]; then
+    KERNEL_TYPE=""
+elif [ $KERNEL_TYPE = "rt" ]; then
+    KERNEL_TYPE="-rt"
+elif [ $KERNEL_TYPE = "cloud" ]; then
+    KERNEL_TYPE="-cloud"
+fi
+if [ $KERNEL_BPO != "true" ]; then
+    KERNELVERSION=5.10.127
+    CONFIG=/boot/config-5.10.0-16$KERNEL_TYPE-$KERNEL_ARCH
+    CHECKOUT=origin/aufs5.10.117
+    mv /etc/apt/sources.list /etc/apt/sources.list.bak
+    cat <<EOF >/etc/apt/sources.list
+deb http://deb.debian.org/debian/ bullseye main
+deb-src http://deb.debian.org/debian/ bullseye main
+
+deb http://security.debian.org/debian-security bullseye-security main
+deb-src http://security.debian.org/debian-security bullseye-security main
+
+# bullseye-updates, to get updates before a point release is made;
+# see https://www.debian.org/doc/manuals/debian-reference/ch02.en.html#_updates_and_backports
+deb http://deb.debian.org/debian/ bullseye-updates main
+deb-src http://deb.debian.org/debian/ bullseye-updates main
+
+EOF
+else
+    BPO="-t $DISTRIBUTION-backports"
+    KERNELVERSION=5.18.14
+    CONFIG=/boot/config-5.18.0-0.bpo.1$KERNEL_TYPE-$KERNEL_ARCH
+    CHECKOUT=origin/aufs5.18
+    mv /etc/apt/sources.list /etc/apt/sources.list.bak
+    cat <<EOF >/etc/apt/sources.list
+deb http://deb.debian.org/debian/ bullseye main
+deb-src http://deb.debian.org/debian/ bullseye main
+
+deb http://security.debian.org/debian-security bullseye-security main
+deb-src http://security.debian.org/debian-security bullseye-security main
+
+# bullseye-updates, to get updates before a point release is made;
+# see https://www.debian.org/doc/manuals/debian-reference/ch02.en.html#_updates_and_backports
+deb http://deb.debian.org/debian/ bullseye-updates main
+deb-src http://deb.debian.org/debian/ bullseye-updates main
+
+deb http://deb.debian.org/debian bullseye-backports main
+deb-src http://deb.debian.org/debian/ bullseye-backports main
+
+EOF
+fi
+KERNEL=linux-$KERNELVERSION
+CPU=$(nproc)
+DATE="$(date +%d%m%Y)"
+
+if [ -d $KERNEL ]; then
+    rm -rf $KERNEL
+fi
+
+apt update
+apt install --yes git unp kmod cpio unzip bzip2 make bc build-essential libncurses5-dev fakeroot bison flex libelf-dev openssl libssl-dev curl wget jq rsync lsb-release dwarves python3
+apt build-dep linux
+apt source $BPO linux
+mv -f /etc/apt/sources.list.bak /etc/apt/sources.list
+
+cd $KERNEL
+rm -Rf $AUFS
+git clone https://github.com/sfjro/$AUFS
+cd $AUFS
+git checkout $CHECKOUT
+cd ..
+
+cp -aR $AUFS/fs .
+cp -a $AUFS/include/uapi/linux/aufs_type.h include/uapi/linux
+
+patch -p1 <$AUFS/aufs5-kbuild.patch
+patch -p1 <$AUFS/aufs5-base.patch
+patch -p1 <$AUFS/aufs5-mmap.patch
+patch -p1 <$AUFS/aufs5-standalone.patch
+patch -p1 <$AUFS/aufs5-loopback.patch
+patch -p1 <$AUFS/vfs-ino.patch
+patch -p1 <$AUFS/tmpfs-idr.patch
+
+cat $CONFIG | sed -r "s/CONFIG_SYSTEM_TRUSTED_KEYS/#CONFIG_SYSTEM_TRUSTED_KEYS/" >.config
+
+echo "CONFIG_AUFS_FS=m
+# CONFIG_AUFS_BRANCH_MAX_127 is not set
+# CONFIG_AUFS_BRANCH_MAX_511 is not set
+# CONFIG_AUFS_BRANCH_MAX_1023 is not set
+CONFIG_AUFS_BRANCH_MAX_32767=y
+CONFIG_AUFS_SBILIST=y
+# CONFIG_AUFS_HNOTIFY is not set
+CONFIG_AUFS_EXPORT=y
+CONFIG_AUFS_INO_T_64=y
+CONFIG_AUFS_XATTR=y
+# CONFIG_AUFS_FHSM is not set
+# CONFIG_AUFS_RDU is not set
+CONFIG_AUFS_DIRREN=y
+CONFIG_AUFS_SHWH=y
+CONFIG_AUFS_BR_RAMFS=y
+CONFIG_AUFS_BR_FUSE=y
+CONFIG_AUFS_POLL=y
+CONFIG_AUFS_BR_HFSPLUS=y
+CONFIG_AUFS_BDEV_LOOP=y
+# CONFIG_AUFS_DEBUG is not set" >>.config
+
+#make olddefconfig
+yes "" | make oldconfig
+
+#changing debian certs keys off if kernel is default debian
+sed -ri '/CONFIG_SYSTEM_TRUSTED_KEYS/s/=.+/=""/g' .config
+
+#minor it's about the naming
+sed -ri '/CONFIG_BUILD_SALT=/s/=.+/=""/g' .config
+echo CONFIG_BUILD_SALT=\"$KERNELVERSION-$KERNEL_TYPE-$KERNEL_ARCH\" >>.config
+
+make -j$CPU bindeb-pkg
