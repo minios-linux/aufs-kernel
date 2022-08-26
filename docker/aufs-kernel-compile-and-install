@@ -28,8 +28,8 @@ elif [ $KERNEL_TYPE = "cloud" ]; then
     KERNEL_TYPE="-cloud"
 fi
 if [ $KERNEL_BPO != "true" ]; then
-    KERNELVERSION=5.10.127
-    CONFIG=/boot/config-5.10.0-16$KERNEL_TYPE-$KERNEL_ARCH
+    KERNELVERSION=5.10.136
+    CONFIG=/boot/config-5.10.0-17$KERNEL_TYPE-$KERNEL_ARCH
     CHECKOUT=origin/aufs5.10.117
     mv /etc/apt/sources.list /etc/apt/sources.list.bak
     cat <<EOF >/etc/apt/sources.list
