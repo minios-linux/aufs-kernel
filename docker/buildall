@@ -1,0 +1,13 @@
+#!/bin/bash
+./aufs-kernel-compile-deb default amd64
+./aufs-kernel-compile-deb default 686
+./aufs-kernel-compile-deb default 686-pae
+./aufs-kernel-compile-deb rt amd64
+./aufs-kernel-compile-deb rt 686-pae
+./aufs-kernel-compile-deb cloud amd64
+./aufs-kernel-compile-deb default amd64 bpo
+./aufs-kernel-compile-deb default 686 bpo
+./aufs-kernel-compile-deb default 686-pae bpo
+./aufs-kernel-compile-deb rt amd64 bpo
+./aufs-kernel-compile-deb rt 686-pae bpo
+./aufs-kernel-compile-deb cloud amd64 bpo
