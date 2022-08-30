@@ -131,6 +131,6 @@ sed -ri '/CONFIG_SYSTEM_TRUSTED_KEYS/s/=.+/=""/g' .config
 
 #minor it's about the naming
 #sed -ri '/CONFIG_BUILD_SALT=/s/=.+/=""/g' .config
-#echo CONFIG_BUILD_SALT=\"$KERNELVERSION-$KERNEL_TYPE-$KERNEL_ARCH\" >>.config
+#echo CONFIG_BUILD_SALT=\"$KERNELVERSION$KERNEL_TYPE-$KERNEL_ARCH\" >>.config
 
-make -j$CPU bindeb-pkg
+make -j$CPU bindeb-pkg EXTRAVERSION=$KERNEL_TYPE LOCALVERSION="-$KERNEL_ARCH"
