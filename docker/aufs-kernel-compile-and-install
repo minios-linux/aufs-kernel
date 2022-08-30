@@ -48,7 +48,7 @@ EOF
 else
     BPO="-t $DISTRIBUTION-backports"
     KERNELVERSION=5.18.16
-    CONFIG=/boot/config-5.18.0-0.bpo.1$KERNEL_TYPE-$KERNEL_ARCH
+    CONFIG=/boot/config-5.18.0-0.deb11.3$KERNEL_TYPE-$KERNEL_ARCH
     CHECKOUT=origin/aufs5.18
     mv /etc/apt/sources.list /etc/apt/sources.list.bak
     cat <<EOF >/etc/apt/sources.list

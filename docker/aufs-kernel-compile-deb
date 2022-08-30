@@ -48,7 +48,7 @@ EOF
 else
     BPO="-t $DISTRIBUTION-backports"
     KERNELVERSION=5.18.16
-    CONFIG=/boot/config-5.18.0-0.bpo.1$KERNEL_TYPE-$KERNEL_ARCH
+    CONFIG=/boot/config-5.18.0-0.deb11.3$KERNEL_TYPE-$KERNEL_ARCH
     CHECKOUT=origin/aufs5.18
     mv /etc/apt/sources.list /etc/apt/sources.list.bak
     cat <<EOF >/etc/apt/sources.list
@@ -130,7 +130,7 @@ yes "" | make oldconfig
 sed -ri '/CONFIG_SYSTEM_TRUSTED_KEYS/s/=.+/=""/g' .config
 
 #minor it's about the naming
-sed -ri '/CONFIG_BUILD_SALT=/s/=.+/=""/g' .config
-echo CONFIG_BUILD_SALT=\"$KERNELVERSION-$KERNEL_TYPE-$KERNEL_ARCH\" >>.config
+#sed -ri '/CONFIG_BUILD_SALT=/s/=.+/=""/g' .config
+#echo CONFIG_BUILD_SALT=\"$KERNELVERSION-$KERNEL_TYPE-$KERNEL_ARCH\" >>.config
 
 make -j$CPU bindeb-pkg
