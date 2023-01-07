@@ -28,11 +28,11 @@ elif [ $KERNEL_TYPE = "cloud" ]; then
     KERNEL_TYPE="-cloud"
 fi
 if [ $KERNEL_BPO != "true" ]; then
-    KERNELVERSION=5.10.149
-    if [ ! -f /boot/config-5.10.0-19$KERNEL_TYPE-$KERNEL_ARCH ]; then
-        cp ./config-5.10.0-19$KERNEL_TYPE-$KERNEL_ARCH /boot/config-5.10.0-19$KERNEL_TYPE-$KERNEL_ARCH
+    KERNELVERSION=5.10.158
+    if [ ! -f /boot/config-5.10.0-20$KERNEL_TYPE-$KERNEL_ARCH ]; then
+        cp ./config-5.10.0-20$KERNEL_TYPE-$KERNEL_ARCH /boot/config-5.10.0-20$KERNEL_TYPE-$KERNEL_ARCH
     fi
-    CONFIG=/boot/config-5.10.0-19$KERNEL_TYPE-$KERNEL_ARCH
+    CONFIG=/boot/config-5.10.0-20$KERNEL_TYPE-$KERNEL_ARCH
     CHECKOUT=origin/aufs5.10.140
     mv /etc/apt/sources.list /etc/apt/sources.list.bak
     cat <<EOF >/etc/apt/sources.list
@@ -50,11 +50,11 @@ deb-src http://deb.debian.org/debian/ bullseye-updates main
 EOF
 else
     BPO="-t $DISTRIBUTION-backports"
-    KERNELVERSION=6.0.3
-    if [ ! -f /boot/config-6.0.0-0.deb11.2$KERNEL_TYPE-$KERNEL_ARCH ]; then
-        cp ./config-6.0.0-0.deb11.2$KERNEL_TYPE-$KERNEL_ARCH /boot/config-6.0.0-0.deb11.2$KERNEL_TYPE-$KERNEL_ARCH
+    KERNELVERSION=6.0.12
+    if [ ! -f /boot/config-6.0.0-0.deb11.6$KERNEL_TYPE-$KERNEL_ARCH ]; then
+        cp ./config-6.0.0-0.deb11.6$KERNEL_TYPE-$KERNEL_ARCH /boot/config-6.0.0-0.deb11.6$KERNEL_TYPE-$KERNEL_ARCH
     fi
-    CONFIG=/boot/config-6.0.0-0.deb11.2$KERNEL_TYPE-$KERNEL_ARCH
+    CONFIG=/boot/config-6.0.0-0.deb11.6$KERNEL_TYPE-$KERNEL_ARCH
     CHECKOUT=origin/aufs6.0
     mv /etc/apt/sources.list /etc/apt/sources.list.bak
     cat <<EOF >/etc/apt/sources.list
@@ -149,4 +149,4 @@ sed -ri '/CONFIG_SYSTEM_TRUSTED_KEYS/s/=.+/=""/g' .config
 #sed -ri '/CONFIG_BUILD_SALT=/s/=.+/=""/g' .config
 #echo CONFIG_BUILD_SALT=\"$KERNELVERSION$KERNEL_TYPE-$KERNEL_ARCH\" >>.config
 
-make -j$CPU bindeb-pkg EXTRAVERSION="-mos$KERNEL_TYPE" LOCALVERSION="$KERNEL_ARCH"
+make -j$CPU bindeb-pkg EXTRAVERSION="-mos$KERNEL_TYPE" LOCALVERSION="-$KERNEL_ARCH"
